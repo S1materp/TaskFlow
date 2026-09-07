@@ -4,14 +4,14 @@ using TaskFlow.Api.Contracts;
 using TaskFlow.Api.Data;
 using TaskFlow.Api.Features.Tasks;
 using TaskFlow.Api.Models;
-
+using TaskFlow.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddHostedService<TaskStatsWorker>();
 // MediatR
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));

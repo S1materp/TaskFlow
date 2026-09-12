@@ -113,3 +113,23 @@ TaskFlow/
 ├── docker-compose.yml
 └── TaskFlow.sln
 ```
+
+## API Demo
+
+### Swagger — REST API endpoints
+
+TaskFlow provides a REST API for creating, reading, updating and deleting tasks.
+
+![Swagger API](docs/swagger-overview.png)
+
+### Getting tasks
+
+`GET /api/tasks` returns the current task list from PostgreSQL.
+
+![GET tasks](docs/get-tasks.png)
+
+### Creating a task
+
+`POST /api/tasks` creates a new task and returns `201 Created`.
+
+![Create task](docs/create-task.png)

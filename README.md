@@ -1,38 +1,89 @@
-# TaskFlow API
+# TaskFlow
 
-TaskFlow is a REST API for task management built with C# and ASP.NET Core.
+TaskFlow is a backend REST API for task management built with **C# and ASP.NET Core**.
 
-The project was created as a pet project to practice backend development, REST API design, relational databases, asynchronous programming, testing, and containerization.
+The project demonstrates backend development with PostgreSQL, Redis caching, Docker, Entity Framework Core, MediatR and automated tests.
 
 ## Features
 
-- Create, read, update and delete tasks (CRUD)
-- REST API with GET, POST, PUT and DELETE endpoints
-- PostgreSQL database
-- Entity Framework Core
-- EF Core migrations
-- CQRS with MediatR
-- Async/await
-- Background processing with BackgroundService
-- Graceful cancellation with CancellationToken
-- Swagger / OpenAPI documentation
-- xUnit tests
-- Docker containerization
-- Docker Compose for PostgreSQL
+- Create tasks
+- Get all tasks
+- Get task by ID
+- Update tasks
+- Delete tasks
+- PostgreSQL data persistence
+- Redis distributed caching
+- Cache invalidation after data changes
+- Background task processing
+- REST API documentation with Swagger
+- Unit tests
 
-## Technologies
+## Tech Stack
 
 - C#
 - .NET 9
 - ASP.NET Core
+- REST API
 - Entity Framework Core
 - PostgreSQL
+- Redis
 - MediatR
+- Docker / Docker Compose
 - Swagger / OpenAPI
 - xUnit
-- Docker
-- Docker Compose
 - Git
+
+## Architecture
+
+```text
+Client
+  |
+  v
+ASP.NET Core REST API
+  |
+  +------> Redis Cache
+  |
+  +------> PostgreSQL
+  |
+  +------> BackgroundService
+```
+
+The API uses PostgreSQL as persistent storage and Redis as a distributed cache.
+
+MediatR is used for application commands, while Entity Framework Core provides database access.
+
+## Redis Caching
+
+`GET /api/tasks` uses Redis to reduce unnecessary database requests.
+
+Request flow:
+
+```text
+GET /api/tasks
+      |
+      v
+    Redis
+    /   \
+  HIT   MISS
+   |      |
+Response PostgreSQL
+          |
+          v
+        Redis
+          |
+          v
+       Response
+```
+
+The task list is cached for 5 minutes.
+
+The cache is invalidated after:
+
+- POST
+- PUT
+- DELETE
+
+This prevents clients from receiving outdated task data after changes.
 
 ## API Endpoints
 
@@ -44,92 +95,87 @@ The project was created as a pet project to practice backend development, REST A
 | PUT | `/api/tasks/{id}` | Update a task |
 | DELETE | `/api/tasks/{id}` | Delete a task |
 
-## Example Request
+## API Demo
 
-POST `/api/tasks`
+### Swagger
+
+The API is documented and can be tested using Swagger UI.
+
+![Swagger API](docs/swagger-overview.png)
+
+### Get Tasks
+
+`GET /api/tasks` returns the current task list.
+
+![GET tasks](docs/get-tasks.png)
+
+### Create Task
+
+`POST /api/tasks` creates a new task.
+
+![Create task](docs/create-task.png)
+
+## Example Request
 
 ```json
 {
-  "title": "Prepare for .NET internship",
+  "title": "Add Redis caching",
   "isCompleted": false
 }
 ```
 
-## Background Processing
+## Running the Project
 
-The application contains a background worker implemented with ASP.NET Core `BackgroundService`.
+### Requirements
 
-The worker asynchronously queries the database for incomplete tasks using Entity Framework Core and supports graceful shutdown using `CancellationToken`.
-
-## Database
-
-TaskFlow uses PostgreSQL as a relational database.
-
-Database schema changes are managed using Entity Framework Core migrations.
-
-Apply migrations with:
-
-```bash
-dotnet ef database update --project TaskFlow.Api/TaskFlow.Api.csproj
-```
-
-## Run PostgreSQL with Docker
+- .NET 9 SDK
+- Docker
+- Docker Compose
 
 Start PostgreSQL:
 
 ```bash
-docker compose up -d postgres
+docker compose up -d
 ```
 
-Check running containers:
+Start Redis:
 
 ```bash
-docker ps
+docker run -d --name taskflow-redis -p 6379:6379 redis:7
 ```
 
-## Run the API
+Run the API:
 
 ```bash
-dotnet run --project TaskFlow.Api/TaskFlow.Api.csproj
+cd TaskFlow.Api
+dotnet run
 ```
 
-After starting the application, open the Swagger UI using the URL shown in the console.
+Open Swagger in the browser using the URL displayed by the application.
 
 ## Tests
 
-Run the test suite with:
+Run automated tests:
 
 ```bash
 dotnet test
 ```
 
-## Project Structure
+## What This Project Demonstrates
 
-```text
-TaskFlow/
-├── TaskFlow.Api/       # ASP.NET Core REST API
-├── TaskFlow.Tests/     # Automated tests
-├── taskflow-client/    # React + TypeScript client
-├── docker-compose.yml
-└── TaskFlow.sln
-```
+- Backend development with C# and ASP.NET Core
+- REST API design
+- Relational database integration
+- Distributed caching with Redis
+- Cache invalidation
+- Asynchronous programming
+- Background services
+- Containerization with Docker
+- Unit testing
+- Git-based development workflow
 
-## API Demo
+## Author
 
-### Swagger — REST API endpoints
+**Serafima Saltanova**
 
-TaskFlow provides a REST API for creating, reading, updating and deleting tasks.
-
-![Swagger API](docs/swagger-overview.png)
-
-### Getting tasks
-
-`GET /api/tasks` returns the current task list from PostgreSQL.
-
-![GET tasks](docs/get-tasks.png)
-
-### Creating a task
-
-`POST /api/tasks` creates a new task and returns `201 Created`.
-
-![Create task](docs/create-task.png)
+GitHub: [S1materp](https://github.com/S1materp)

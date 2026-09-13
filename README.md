@@ -1,91 +1,108 @@
 # TaskFlow
 
-TaskFlow is a backend REST API for task management built with **C# and ASP.NET Core**.
+Full-stack task management application built with **React, TypeScript and ASP.NET Core**.
 
-The project demonstrates backend development with PostgreSQL, Redis caching, Docker, Entity Framework Core, MediatR and automated tests.
+TaskFlow demonstrates a modern frontend architecture, REST API integration, PostgreSQL persistence, Redis caching and containerized infrastructure.
+
+![TaskFlow Frontend](docs/taskflow-frontend.png)
 
 ## Features
 
+### Frontend
+
 - Create tasks
-- Get all tasks
-- Get task by ID
-- Update tasks
+- Complete tasks
 - Delete tasks
-- PostgreSQL data persistence
-- Redis distributed caching
+- Filter by All / Active / Completed
+- Active task counter
+- Loading, error and empty states
+- Responsive UI
+- Client-side routing
+- Server-state management and caching with TanStack Query
+- Environment-based API configuration
+
+### Backend
+
+- REST API with ASP.NET Core
+- CRUD operations
+- PostgreSQL persistence with Entity Framework Core
+- Redis caching
 - Cache invalidation after data changes
-- Background task processing
-- REST API documentation with Swagger
-- Unit tests
+- MediatR for application commands
+- Background service for task statistics
+- Swagger / OpenAPI documentation
+- Unit tests with xUnit
+- Dockerized infrastructure
 
 ## Tech Stack
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- TanStack Query
+- React Router
+- CSS
+- ESLint
+
+### Backend
 
 - C#
 - .NET 9
 - ASP.NET Core
-- REST API
 - Entity Framework Core
+- MediatR
 - PostgreSQL
 - Redis
-- MediatR
-- Docker / Docker Compose
 - Swagger / OpenAPI
 - xUnit
+
+### DevOps & Tools
+
+- Docker
+- Docker Compose
 - Git
+- GitHub
 
 ## Architecture
 
 ```text
-Client
-  |
-  v
-ASP.NET Core REST API
-  |
-  +------> Redis Cache
-  |
-  +------> PostgreSQL
-  |
-  +------> BackgroundService
+React + TypeScript
+        |
+        | HTTP / REST
+        v
+ASP.NET Core API
+        |
+        +------> Redis Cache
+        |
+        +------> PostgreSQL
 ```
 
-The API uses PostgreSQL as persistent storage and Redis as a distributed cache.
-
-MediatR is used for application commands, while Entity Framework Core provides database access.
-
-## Redis Caching
-
-`GET /api/tasks` uses Redis to reduce unnecessary database requests.
-
-Request flow:
+The frontend is separated into pages, reusable UI components, API services and TypeScript models.
 
 ```text
-GET /api/tasks
-      |
-      v
-    Redis
-    /   \
-  HIT   MISS
-   |      |
-Response PostgreSQL
-          |
-          v
-        Redis
-          |
-          v
-       Response
+taskflow-client/src/
+├── api/
+│   └── tasks.ts
+├── components/
+│   ├── TaskFilter.tsx
+│   ├── TaskForm.tsx
+│   └── TaskItem.tsx
+├── pages/
+│   ├── TasksPage.tsx
+│   └── NotFoundPage.tsx
+├── types/
+│   └── task.ts
+├── App.tsx
+└── main.tsx
 ```
 
-The task list is cached for 5 minutes.
+TanStack Query manages asynchronous server state and synchronizes the UI with the backend after mutations.
 
-The cache is invalidated after:
+The backend uses PostgreSQL as persistent storage. Redis implements caching for task-list requests, with cache invalidation after create, update and delete operations.
 
-- POST
-- PUT
-- DELETE
-
-This prevents clients from receiving outdated task data after changes.
-
-## API Endpoints
+## API
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -99,83 +116,75 @@ This prevents clients from receiving outdated task data after changes.
 
 ### Swagger
 
-The API is documented and can be tested using Swagger UI.
-
 ![Swagger API](docs/swagger-overview.png)
 
-### Get Tasks
-
-`GET /api/tasks` returns the current task list.
+### Getting tasks
 
 ![GET tasks](docs/get-tasks.png)
 
-### Create Task
-
-`POST /api/tasks` creates a new task.
+### Creating a task
 
 ![Create task](docs/create-task.png)
 
-## Example Request
-
-```json
-{
-  "title": "Add Redis caching",
-  "isCompleted": false
-}
-```
-
-## Running the Project
+## Run locally
 
 ### Requirements
 
 - .NET 9 SDK
+- Node.js
 - Docker
 - Docker Compose
 
-Start PostgreSQL:
+### 1. Start infrastructure
 
 ```bash
 docker compose up -d
 ```
 
-Start Redis:
-
-```bash
-docker run -d --name taskflow-redis -p 6379:6379 redis:7
-```
-
-Run the API:
+### 2. Start backend
 
 ```bash
 cd TaskFlow.Api
 dotnet run
 ```
 
-Open Swagger in the browser using the URL displayed by the application.
+### 3. Configure frontend
 
-## Tests
+Inside `taskflow-client`, create `.env` based on `.env.example`:
 
-Run automated tests:
+```env
+VITE_API_URL=http://localhost:5019/api/tasks
+```
+
+### 4. Start frontend
+
+```bash
+cd taskflow-client
+npm install
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+## Quality checks
+
+Frontend:
+
+```bash
+npm run build
+npm run lint
+```
+
+Backend tests:
 
 ```bash
 dotnet test
 ```
 
-## What This Project Demonstrates
+## Project purpose
 
-- Backend development with C# and ASP.NET Core
-- REST API design
-- Relational database integration
-- Distributed caching with Redis
-- Cache invalidation
-- Asynchronous programming
-- Background services
-- Containerization with Docker
-- Unit testing
-- Git-based development workflow
-
-## Author
-
-**Serafima Saltanova**
-
-GitHub: [S1materp](https://github.com/S1materp)
+TaskFlow was created as a portfolio full-stack project to practice building an application across the entire stack: frontend architecture, typed API integration, backend development, database persistence, caching, testing and containerized infrastructure.

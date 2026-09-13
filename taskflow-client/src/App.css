@@ -171,10 +171,14 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 18px;
+
+  min-height: 122px;
+  padding: 20px 22px;
+
   border: 1px solid #1e293b;
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.82);
+
   transition:
     border-color 0.15s ease,
     transform 0.15s ease,
@@ -188,10 +192,19 @@ h1 {
 }
 
 .task-content {
-  display: flex;
+  display: grid;
+  grid-template-columns: 42px 1fr;
   align-items: center;
   gap: 14px;
+  flex: 1;
   min-width: 0;
+}
+
+.task-content > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
 }
 
 .task-content h3 {
@@ -257,6 +270,11 @@ h1 {
   color: #fca5a5;
   font-size: 13px;
   font-weight: 700;
+}
+
+.delete-button {
+  flex-shrink: 0;
+  min-width: 82px;
 }
 
 .delete-button:not(:disabled):hover {

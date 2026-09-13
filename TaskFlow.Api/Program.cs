@@ -1,4 +1,5 @@
 using MediatR;
+using Prometheus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
@@ -32,6 +33,12 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "TaskFlow_";
 });
 
+// Health Checks
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("DefaultConnection")!)
+    .AddRedis("localhost:6379");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -44,7 +51,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
+app.UseHttpMetrics();
 app.UseCors("Frontend");
 
 app.UseSwagger();
@@ -175,5 +182,6 @@ app.MapDelete("/api/tasks/{id}", async (
 
     return Results.NoContent();
 });
-
+app.MapHealthChecks("/health");
+app.MapMetrics();
 app.Run();

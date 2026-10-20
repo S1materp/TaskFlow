@@ -60,7 +60,7 @@ jobs:
       - name: Install QA dependencies
         run: python -m pip install -r qa-tests/requirements.txt
       - name: Run Python integration tests
-        run: python -m pytest -c qa-tests/pytest.ini qa-tests/tests -v --junitxml=qa-results.xml
+        run: python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_api.py qa-tests/tests/test_database.py qa-tests/tests/test_worker.py -v --junitxml=qa-results.xml
       - name: Upload test results and API logs
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,72 @@
+name: Python QA Integration Tests
+
+on:
+  push:
+    branches: [main, feature/python-qa-automation]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: taskflow
+          POSTGRES_USER: taskflow
+          POSTGRES_PASSWORD: taskflow123
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U taskflow -d taskflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=55432;Database=taskflow;Username=taskflow;Password=taskflow123
+      TASKFLOW_DATABASE_URL: postgresql://taskflow:taskflow123@127.0.0.1:55432/taskflow
+      TASKFLOW_API_URL: http://127.0.0.1:5019
+      TASKFLOW_API_LOG_PATH: /tmp/taskflow-api.log
+      ASPNETCORE_ENVIRONMENT: Development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore and build backend
+        run: dotnet build TaskFlow.Api/TaskFlow.Api.csproj --configuration Release
+      - name: Install EF tool
+        run: dotnet tool install --global dotnet-ef --version '9.*'
+      - name: Apply PostgreSQL migrations
+        run: dotnet ef database update --project TaskFlow.Api
+      - name: Start API
+        run: |
+          dotnet run --project TaskFlow.Api --no-launch-profile --no-build --configuration Release --urls http://127.0.0.1:5019 > /tmp/taskflow-api.log 2>&1 &
+          echo $! > /tmp/taskflow-api.pid
+      - name: Install QA dependencies
+        run: python -m pip install -r qa-tests/requirements.txt
+      - name: Run Python integration tests
+        run: python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_api.py qa-tests/tests/test_database.py qa-tests/tests/test_worker.py -v --junitxml=qa-results.xml
+      - name: Upload test results and API logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-qa-results
+          path: |
+            qa-results.xml
+            /tmp/taskflow-api.log
+          if-no-files-found: ignore

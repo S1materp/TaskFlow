@@ -6,6 +6,42 @@ TaskFlow demonstrates a modern frontend architecture, REST API integration, Post
 
 ![TaskFlow Frontend](docs/taskflow-frontend.png)
 
+## Testing & Quality Assurance
+
+TaskFlow combines full-stack development with automated quality checks across its REST API, PostgreSQL persistence, Redis caching, React interface, and CI workflows.
+
+| Area | Tools | What is verified |
+|---|---|---|
+| REST API | Python, pytest, httpx | CRUD, HTTP status codes, invalid input, boundary cases |
+| Database | PostgreSQL, psycopg | Created, updated, and deleted records match API operations |
+| Caching | Redis, pytest | Task-list cache invalidation after mutations |
+| Browser E2E | Python, Playwright, Chromium | Create, complete, filter, and delete tasks in the React UI |
+| Background processing | pytest, application logs | Periodic task-statistics worker produces its log output |
+| CI/CD | GitHub Actions | Automated .NET/frontend checks, API integration tests, and browser tests |
+
+### Automated test suites
+
+- [Python QA test suite](qa-tests/tests) — pytest fixtures, API tests, database checks, worker verification, and UI E2E tests.
+- [QA setup and commands](qa-tests/README.md) — environment variables, dependencies, and local execution.
+- [Python API / database CI](.github/workflows/python-qa.yml) — PostgreSQL and Redis services plus API integration tests.
+- [Python Playwright CI](.github/workflows/python-e2e.yml) — backend, frontend, database, cache, and headless Chromium.
+- [Full-stack CI](.github/workflows/ci.yml) — backend build/tests and frontend lint/build.
+
+### Run the Python QA tests
+
+Use a **disposable local database**: integration tests create and delete records.
+
+```bash
+python -m pip install -r qa-tests/requirements.txt
+python -m playwright install chromium
+
+# Once the backend, PostgreSQL, Redis and frontend are running:
+python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_api.py qa-tests/tests/test_database.py -v
+python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_ui.py -v
+```
+
+The optional worker-log check uses `TASKFLOW_API_LOG_PATH` to read captured API logs. See [QA setup](qa-tests/README.md) for connection configuration. The GitHub Actions workflows provide reproducible examples of the complete test environment.
+
 ## Features
 
 ### Frontend
@@ -169,42 +205,6 @@ Open:
 ```text
 http://localhost:5173
 ```
-
-## QA Automation portfolio
-
-TaskFlow also serves as a **Junior QA Automation portfolio project**: a real React frontend and ASP.NET Core backend tested across API, database, browser, and CI layers.
-
-| Area | Tools | What is verified |
-|---|---|---|
-| REST API | Python, pytest, httpx | CRUD, HTTP status codes, invalid input, boundary cases |
-| Database | PostgreSQL, psycopg | Created, updated, and deleted records match API operations |
-| Caching | Redis, pytest | Task-list cache invalidation after mutations |
-| Browser E2E | Python, Playwright, Chromium | Create, complete, filter, and delete tasks in the React UI |
-| Background processing | pytest, application logs | Periodic task-statistics worker produces its log output |
-| CI/CD | GitHub Actions | Automated .NET/frontend checks, API integration tests, and browser tests |
-
-### Automated test suites
-
-- [Python QA test suite](qa-tests/tests) — pytest fixtures, API tests, database checks, worker verification, and UI E2E tests.
-- [QA setup and commands](qa-tests/README.md) — environment variables, dependencies, and local execution.
-- [Python API / database CI](.github/workflows/python-qa.yml) — PostgreSQL and Redis services plus API integration tests.
-- [Python Playwright CI](.github/workflows/python-e2e.yml) — backend, frontend, database, cache, and headless Chromium.
-- [Full-stack CI](.github/workflows/ci.yml) — backend build/tests and frontend lint/build.
-
-### Run the Python QA tests
-
-Use a **disposable local database**: integration tests create and delete records.
-
-```bash
-python -m pip install -r qa-tests/requirements.txt
-python -m playwright install chromium
-
-# Once the backend, PostgreSQL, Redis and frontend are running:
-python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_api.py qa-tests/tests/test_database.py -v
-python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_ui.py -v
-```
-
-The optional worker-log check uses `TASKFLOW_API_LOG_PATH` to read captured API logs. See [QA setup](qa-tests/README.md) for connection configuration. The GitHub Actions workflows provide reproducible examples of the complete test environment.
 
 ## Quality checks
 

@@ -66,6 +66,11 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Run browser E2E tests
         run: python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_ui.py -v --junitxml=e2e-results.xml
+      - name: Print application logs on failure
+        if: failure()
+        run: |
+          cat /tmp/taskflow-api.log || true
+          cat /tmp/taskflow-ui.log || true
       - name: Upload logs and test results
         if: always()
         uses: actions/upload-artifact@v4

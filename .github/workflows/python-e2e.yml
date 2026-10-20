@@ -64,6 +64,25 @@ jobs:
         run: |
           python -m pip install -r qa-tests/requirements.txt
           python -m playwright install --with-deps chromium
+      - name: Wait for API and frontend readiness
+        run: |
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          for url in ("http://127.0.0.1:5019/health", "http://127.0.0.1:5019/api/tasks", "http://127.0.0.1:5173/"):
+              for attempt in range(60):
+                  try:
+                      with urllib.request.urlopen(url, timeout=3) as response:
+                          if response.status == 200:
+                              print(f"Ready: {url}")
+                              break
+                  except Exception:
+                      pass
+                  time.sleep(1)
+              else:
+                  raise SystemExit(f"Service not ready: {url}")
+          PY
       - name: Run browser E2E tests
         run: python -m pytest -c qa-tests/pytest.ini qa-tests/tests/test_ui.py -v --junitxml=e2e-results.xml
       - name: Print application logs on failure

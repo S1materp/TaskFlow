@@ -37,6 +37,7 @@ jobs:
       ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=55432;Database=taskflow;Username=taskflow;Password=taskflow123
       TASKFLOW_DATABASE_URL: postgresql://taskflow:taskflow123@127.0.0.1:55432/taskflow
       TASKFLOW_API_URL: http://127.0.0.1:5019
+      TASKFLOW_API_LOG_PATH: /tmp/taskflow-api.log
       ASPNETCORE_ENVIRONMENT: Development
     steps:
       - uses: actions/checkout@v4
